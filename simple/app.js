@@ -8,6 +8,11 @@ app.post('/', (req, res) => {
   res.status(200).json(req.body)
 })
 
+app.post('/error', (_, res) => {
+  console.log('visited error route')
+  res.status(404).json({error: 'not found'});
+})
+
 app.get('/liveness', (req, res) => {
   res.status(200).json({alive: true})
 })
