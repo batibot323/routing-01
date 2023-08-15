@@ -20,12 +20,17 @@ app.post('/', (req, res) => {
   })
 })
 
-// TODO: Think about http code mapping
+// For non-server errors, we just reflect what the original error was from the Simple API.
+// For server errors, we return a `503` Service Unavailable because our Routing API is available. 
+// It's just because its dependencies are not working temporarily.
+// For unexpected errors, like ECONNRESET, we return a `500` Internal Server Error.
 function handleError(err) {
     console.error(err);
     let code = err?.response?.status;
-    if (code === undefined)
-    return { code: 500, message: 'Internal Server Error' };
+    if (code === undefined) {
+        return { code: 500, message: 'Internal Server Error' };
+    }
+
     let message = err?.response?.data?.error;
     code = code < 500 ? code : 503;
     message = code < 500 ? message : 'Service Unavailable';
