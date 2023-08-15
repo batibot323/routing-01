@@ -8,6 +8,11 @@ app.post('/', (req, res) => {
   res.status(200).json(req.body)
 })
 
+app.post('/weird', (req, res) => {
+  console.log(req.body)
+  res.status(395).json(req.body)
+})
+
 app.post('/error', (_, res) => {
   console.log('visited error route')
   res.status(404).json({error: 'not found'});

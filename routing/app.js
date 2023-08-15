@@ -44,14 +44,13 @@ async function route(req, res, tries) {
 // We'll only return `503` and only if we've gone through all instances and they're all down.
 function handleError(err) {
     console.error(err);
+    const serviceError = { code: 503, message: 'Service Unavailable' };
     let code = err?.response?.status;
-    if (code === undefined) {
-        return { code: 503, message: 'Service Unavailable' };
+    if (code === undefined || code >= 500) {
+        return serviceError
     }
 
     let message = err?.response?.data?.error;
-    code = code < 500 ? code : 503;
-    message = code < 500 ? message : 'Service Unavailable';
     return { code, message }
 }
 
