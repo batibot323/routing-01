@@ -15,6 +15,11 @@ app.post('/error', (_, res) => {
 
 app.post('/internal-server-error', (_, res) => {
   console.log('visited internal-server-error route')
+  res.status(500).json({error: 'discard this error for me.'});
+})
+
+app.post('/service-unavailable', (_, res) => {
+  console.log('visited service-unavailable route')
   res.status(503).json({error: 'discard this error for me.'});
 })
 
@@ -39,3 +44,8 @@ const port = process.env.PORT || 3000
 app.listen(port, () => {
   console.log(`Simple API listening on port ${port}!`)
 })
+
+// const secondPort = process.env.PORT_TWO || 5000
+// app.listen(secondPort, () => {
+//   console.log(`Simple API listening on port ${secondPort}!`)
+// })
