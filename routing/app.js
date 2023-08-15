@@ -13,6 +13,7 @@ let serverURLs = [
 ];
 
 app.post('/', (req, res) => {
+  console.log('start of request to routing api')
   const baseURL = serverURLs[serverHits % serverURLs.length];
   const url = `${baseURL}${req.body.path}`
 

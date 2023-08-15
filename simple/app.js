@@ -15,9 +15,19 @@ app.post('/error', (_, res) => {
 
 app.post('/internal-server-error', (_, res) => {
   console.log('visited internal-server-error route')
-  // This hangs because waiting for .json
-  // res.status(503)
   res.status(503).json({error: 'discard this error for me.'});
+})
+
+app.post('/hang-forever', (_, res) => {
+  console.log('visited hang-forever route')
+  res.status(200)
+})
+
+app.post('/hang-15', (req, res) => {
+  console.log('visited hang-forever route')
+  setTimeout(() => {
+    res.status(200).json(req.body)
+  }, 15000);
 })
 
 app.get('/liveness', (req, res) => {

@@ -7,6 +7,16 @@ This coding task is focused on load balancing and availability patterns. This is
 slowly? Set timeout and move on to the next instance.
 - How would I test this application? Points to the use of additional API's to simulate scenarios.
 
+## On being blocked by an intentionally hanging process.
+Tested out if I'm going to be blocked by a pending request using this code but it doesn't block me so we're good! This is just to determine whether I have to do things just so I can test my timeouts. Basically, express is non-blocking and can handle multiple requests. This also means that I have to set something in my *Simple API* just so I can tell them to act slow in all requests.
+```javascript
+app.post('/internal-server-error', (_, res) => {
+  console.log('visited internal-server-error route')
+  // This hangs because waiting for .json
+  res.status(503)
+})
+```
+
 # Requirements
 ## Required
 1. Simple post API
