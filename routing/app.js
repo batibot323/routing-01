@@ -12,34 +12,41 @@ let serverURLs = [
     'http://localhost:3003/'
 ];
 
-app.post('/', (req, res) => {
-  console.log('start of request to routing api')
-  const baseURL = serverURLs[serverHits % serverURLs.length];
-  const url = `${baseURL}${req.body.path}`
+app.post('/', route)
 
-  serverHits++;
-  // TODO: Think about doing await for better readability.   
-  axios.post(url, req.body)
-  .then(response => {
-    console.log(`From ${baseURL} and endpoint ${req.body.path}`)
-    res.status(200).json(response.data)
-  })
-  .catch(error => {
-    console.log(`From ${baseURL} and endpoint ${req.body.path}`)
-    const { code, message } = handleError(error)
-    res.status(code).json({ error: message })
-  })
-})
+async function route(req, res, tries) {
+    if (typeof tries !== 'number') {
+        tries = serverURLs.length - 1;
+    }
+    console.log('start route')
+    const baseURL = serverURLs[serverHits % serverURLs.length];
+    const endpoint = req.body.path || '';
+    const url = `${baseURL}${endpoint}`
+  
+    serverHits++;
+    try {
+      const response = await axios.post(url, req.body)
+      console.log(`From ${baseURL} and endpoint ${endpoint}`)
+      res.status(200).json(response.data)
+    } catch (error) {
+      console.log(`From ${baseURL} and endpoint ${endpoint}`)
+      const { code, message } = handleError(error)
+      if (code >= 500 && tries > 0) {
+        route(req, res, tries-1);
+      } else {
+        res.status(code).json({ error: message })
+      }
+    }
+}
 
 // For non-server errors, we just reflect what the original error was from the Simple API.
 // For server errors, we return a `503` Service Unavailable because our Routing API is available. 
-// It's just because its dependencies are not working temporarily.
-// For unexpected errors, like ECONNRESET, we return a `500` Internal Server Error.
+// We'll only return `503` and only if we've gone through all instances and they're all down.
 function handleError(err) {
     console.error(err);
     let code = err?.response?.status;
     if (code === undefined) {
-        return { code: 500, message: 'Internal Server Error' };
+        return { code: 503, message: 'Service Unavailable' };
     }
 
     let message = err?.response?.data?.error;
