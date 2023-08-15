@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "start:simple-1": "PORT=3001 node simple/app.js",
+    "start:simple-2": "PORT=3002 node simple/app.js",
+    "start:simple-3": "PORT=3003 node simple/app.js",
+    "start:routing": "node routing/app.js"
+  },
   "dependencies": {
     "express": "^4.18.2"
   }
