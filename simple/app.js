@@ -41,6 +41,7 @@ app.post('/hang-forever', (_, res) => {
 app.post('/hang-15', (req, res) => {
   console.log('visited hang-forever route')
   setTimeout(() => {
+    // TODO: Remove "path" in response
     res.status(200).json(req.body)
   }, 15000);
 })

@@ -5,6 +5,7 @@ const { CircuitBreakerState } = require('./circuit-breaker')
 
 app.use(express.json())
 
+const isVerbose = true;
 // We'll assume that this server doesn't stay down so we can just save to local memory.
 let serverHits = 0;
 // let serverURLs = [
@@ -15,7 +16,6 @@ let serverHits = 0;
 let serverInfo = [
     // { url: 'http://localhost:3001/', state: CircuitBreakerState.CLOSED, strikes: 0 },
 ]
-
 
 app.get('/liveness', (_, res) => {
     res.status(200).json({alive: true})
@@ -38,23 +38,27 @@ async function route(req, res, tries) {
     try {
       const response = await axios.post(url, req.body)
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
+      response.data.server = isVerbose ? baseURL : undefined;
       res.status(200).json(response.data)
     } catch (error) {
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       const { code, message } = handleError(error)
       if (code >= 500 && tries > 0) {
         route(req, res, tries-1);
-      } else {
-        res.status(code).json({ error: message })
+      } else {      
+        const errorBody = { error: message }
+        errorBody.server = isVerbose ? baseURL : undefined;
+        res.status(code).json(errorBody);
       }
     }
 }
 
 async function addServer(req, res) {
-    const url = req.body.url;
+    let url = req.body.url;
     if (!url) {
         res.status(400).json({ error: 'Missing url' })
     }
+    url = url.endsWith('/') ? url : `${url}/`;
     serverInfo.push({ url, state: CircuitBreakerState.CLOSED, strikes: 0 })
     console.log(serverInfo);
 
@@ -67,6 +71,7 @@ async function addServer(req, res) {
 // For server errors, we return a `503` Service Unavailable because our Routing API is available. 
 // We'll only return `503` and only if we've gone through all instances and they're all down.
 function handleError(err) {
+    // TODO: Fix error handling, it's tediously long in terminal as compared to debug console.
     console.error(err);
     const serviceError = { code: 503, message: 'Service Unavailable' };
     let code = err?.response?.status;

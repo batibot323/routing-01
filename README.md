@@ -1,3 +1,21 @@
+# Usage
+
+1. `npm i`
+2. `npm run start:routing`
+3. `npm run start:simple-1` in a new terminal
+4. `npm run start:simple-2` in a new terminal
+5. `npm run start:simple-3` in a new terminal
+6. Make a request to Routing API, (http://localhost:3000/) with any request
+    - You can specify behavior of request by adding "path" field, you can look at `simple/app.js` for the allowed paths.
+
+```json
+{
+    "game": "Mobile Legends",
+    "gamerID": "GYUTDTE",
+    "points": 20,
+    "path": "error"
+}
+```
 # Thoughts
 
 This coding task is focused on load balancing and availability patterns. This is evident because the task is mainly about the routing API and just a simple API, without the need for databases. That's good for me because I can focus on that. With the following guide questions, it also leads me to think more about availability patterns and maybe the use of circuit breakers. Aside from that I'd like to add a few endpoints so I can test and simulate scenarios within the project.
@@ -6,6 +24,8 @@ This coding task is focused on load balancing and availability patterns. This is
 - How would my round robin API handle it if one of the application APIs starts to go
 slowly? Set timeout and move on to the next instance.
 - How would I test this application? Points to the use of additional API's to simulate scenarios.
+
+I think I'm just adding things that are related to load balancing and, especially, availability patterns. I've not actually spent time thinking about them, and I'm hoping to discuss the nuances of different approaches with you.
 
 ## On being blocked by an intentionally hanging process.
 Tested out if I'm going to be blocked by a pending request using this code but it doesn't block me so we're good! This is just to determine whether I have to do things just so I can test my timeouts. Basically, express is non-blocking and can handle multiple requests. This also means that I have to set something in my *Simple API* just so I can tell them to act slow in all requests.
@@ -43,4 +63,6 @@ app.post('/internal-server-error', (_, res) => {
 Just finished with re-routing to a working instance and server discovery. Things to work on next:
 
 1. Timeout
-2. Circuit breaker
+2. Research more!
+3. Circuit breaker
+4. Share code by Wednesday night so they have time to read it.
