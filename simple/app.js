@@ -13,6 +13,13 @@ app.post('/error', (_, res) => {
   res.status(404).json({error: 'not found'});
 })
 
+app.post('/internal-server-error', (_, res) => {
+  console.log('visited internal-server-error route')
+  // This hangs because waiting for .json
+  // res.status(503)
+  res.status(503).json({error: 'discard this error for me.'});
+})
+
 app.get('/liveness', (req, res) => {
   res.status(200).json({alive: true})
 })

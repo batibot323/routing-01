@@ -6,8 +6,8 @@ app.use(express.json())
 
 app.post('/', (req, res) => {
   console.log(req.body)
-  const isError = req.body.is_error  
-  const url = isError ? 'http://localhost:3001/error' : 'http://localhost:3001/'
+  const baseURL = 'http://localhost:3001/';
+  const url = `${baseURL}${req.body.path}`
   axios.post(url, req.body)
   .then(response => {
     console.log(response.data)
@@ -23,10 +23,12 @@ app.post('/', (req, res) => {
 // TODO: Think about http code mapping
 function handleError(err) {
     console.error(err);
-    let code = err.response.status;
-    let message = err.response.data.error;
-    code = code < 500 ? code : 500;
-    message = code < 500 ? message : 'Internal Server Error';
+    let code = err?.response?.status;
+    if (code === undefined)
+    return { code: 500, message: 'Internal Server Error' };
+    let message = err?.response?.data?.error;
+    code = code < 500 ? code : 503;
+    message = code < 500 ? message : 'Service Unavailable';
     return { code, message }
 }
 
