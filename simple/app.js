@@ -1,7 +1,12 @@
 const express = require('express')
 const app = express()
+const axios = require('axios');
+
+const port = process.env.PORT || 3000
 
 app.use(express.json())
+
+init();
 
 app.post('/', (req, res) => {
   console.log(req.body)
@@ -44,8 +49,6 @@ app.get('/liveness', (req, res) => {
   res.status(200).json({alive: true})
 })
 
-const port = process.env.PORT || 3000
-
 app.listen(port, () => {
   console.log(`Simple API listening on port ${port}!`)
 })
@@ -54,3 +57,9 @@ app.listen(port, () => {
 // app.listen(secondPort, () => {
 //   console.log(`Simple API listening on port ${secondPort}!`)
 // })
+
+function init() {
+  const myUrl = 'http://localhost:' + port;
+  const routingUrl = 'http://localhost:3000/server-discovery';
+  axios.post(routingUrl, {url: myUrl});
+}

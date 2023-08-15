@@ -37,4 +37,4 @@ app.post('/internal-server-error', (_, res) => {
     - Just used different endpoints in Simple API and added `endpoint` in request body to Routing API
 - Create another service to start and terminate Simple API instances, let's call it *Orchestration Server*
 - Allows Routing API to set a target number of instances so it sends a message to *Orchestration Server* whether to start or terminate instances.
-- Routing API to have an endpoint to manage URL's on run time.
+- Routing API to have an endpoint to manage URL's on run time (service discovery)
