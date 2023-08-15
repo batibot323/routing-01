@@ -4,17 +4,27 @@ const app = express()
 
 app.use(express.json())
 
+// We'll assume that this server doesn't stay down so we can just save to local memory.
+let serverHits = 0;
+let serverURLs = [
+    'http://localhost:3001/',
+    'http://localhost:3002/',
+    'http://localhost:3003/'
+];
+
 app.post('/', (req, res) => {
-  console.log(req.body)
-  const baseURL = 'http://localhost:3001/';
+  const baseURL = serverURLs[serverHits % serverURLs.length];
   const url = `${baseURL}${req.body.path}`
+
+  serverHits++;
+  // TODO: Think about doing await for better readability.   
   axios.post(url, req.body)
   .then(response => {
-    console.log(response.data)
+    console.log(`From ${baseURL} and endpoint ${req.body.path}`)
     res.status(200).json(response.data)
   })
   .catch(error => {
-    console.error(error)
+    console.log(`From ${baseURL} and endpoint ${req.body.path}`)
     const { code, message } = handleError(error)
     res.status(code).json({ error: message })
   })
