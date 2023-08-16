@@ -68,3 +68,5 @@ Just finished with re-routing to a working instance and server discovery. Things
 2. Research more!
 3. Circuit breaker
 4. Share code by Wednesday night so they have time to read it.
+
+One implementation is server discovery + self-healing from simple API. But for now, I'll let Routing API send a signal to the instances to restart if they're permanently stuck.

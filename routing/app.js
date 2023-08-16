@@ -1,7 +1,7 @@
 const express = require('express')
 const axios = require('axios')
 const app = express()
-const { CircuitBreakerState } = require('./circuit-breaker')
+const CircuitBeaker = require('./circuit-breaker')
 
 app.use(express.json())
 
@@ -14,10 +14,11 @@ let serverHits = 0;
 //     'http://localhost:3003/'
 // ];
 let serverInfo = [
-    { url: 'http://localhost:3001/', state: CircuitBreakerState.CLOSED, strikes: 0 },
-    { url: 'http://localhost:3002/', state: CircuitBreakerState.CLOSED, strikes: 0 },
-    { url: 'http://localhost:3003/', state: CircuitBreakerState.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3001/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3002/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3003/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
 ]
+const openThreshold = 1;
 
 app.get('/liveness', (_, res) => {
     res.status(200).json({alive: true})
@@ -48,6 +49,10 @@ async function route(req, res) {
       const { code, message } = handleError(error)
       if (code >= 500 && res.tries > 0) {
         res.tries--;
+        server.strikes++;
+        if (server.strikes >= openThreshold) {
+          CircuitBeaker.SetToOpen(server)
+        }
         route(req, res);
       } else {      
         const errorBody = { error: message }
