@@ -23,9 +23,10 @@ app.get('/liveness', (_, res) => {
 app.post('/', route)
 app.post('/server-discovery', addServer)
 
-async function route(req, res, tries) {
-    if (typeof tries !== 'number') {
-        tries = serverInfo.length - 1;
+async function route(req, res) {
+    
+    if (res.tries === undefined) {
+        res.tries = serverInfo.length - 1;
     }
     console.log('start route')
     // TODO: Insert logic of finding a working server.
@@ -43,8 +44,9 @@ async function route(req, res, tries) {
     } catch (error) {
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       const { code, message } = handleError(error)
-      if (code >= 500 && tries > 0) {
-        route(req, res, tries-1);
+      if (code >= 500 && res.tries > 0) {
+        res.tries--;
+        route(req, res);
       } else {      
         const errorBody = { error: message }
         errorBody.server = isVerbose ? baseURL : undefined;
