@@ -31,7 +31,6 @@ async function route(req, res) {
         res.tries = serverInfo.length - 1;
     }
     console.log('start route')
-    // TODO: Insert logic of finding a working server.
     let server = serverInfo[serverHits % serverInfo.length];
     while (server.state !== CircuitBeaker.State.CLOSED) {
       res.tries--;

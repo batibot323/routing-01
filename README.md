@@ -43,7 +43,9 @@ app.post('/hang-forever', (_, res) => {
 ## Required
 1. Simple post API - Done!
 2. Base Routing API - Done!
-3. Route to a working instance if `5xx` error
+3. Route to a working instance if `5xx` error - Done!
+4. Handles when a simple API instance goes down
+5. Handles slow instances - Done!
 
 ## Things to Consider (based on guide questions)
 - Criteria to mark an instance as down
@@ -64,9 +66,14 @@ app.post('/hang-forever', (_, res) => {
 ## Scratch TODO
 Just finished with re-routing to a working instance and server discovery. Things to work on next:
 
-1. Timeout
-2. Research more!
-3. Circuit breaker
-4. Share code by Wednesday night so they have time to read it.
+1. Timeout - Done!
+2. Research more! - Done!
+3. Circuit breaker - Done!
+4. Share code by Wednesday night so they have time to read it. - Done!
+5. Handle scenario `GET /liveness` also results from an error or timeout
+    - Think when to delete server from `serverInfo` and send a restart signal to the instance
+6. Increase resiliency
+    - What if you can't even send a restart signal? Create an orchestration server that should spin up another instance and use Routing API `POST /server-discovery`.
+7. Parametrize things!
 
 One implementation is server discovery + self-healing from simple API. But for now, I'll let Routing API send a signal to the instances to restart if they're permanently stuck.
