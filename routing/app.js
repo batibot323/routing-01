@@ -34,11 +34,15 @@ async function route(req, res) {
     console.log('start route')
     // TODO: Insert logic of finding a working server.
     const server = serverInfo[serverHits % serverInfo.length];
+    serverHits++;
+    if (server.state !== CircuitBeaker.State.CLOSED) {
+        route(req, res);
+    }
+
     const baseURL = server?.url;
     const endpoint = req.body.path || '';
     const url = `${baseURL}${endpoint}`
   
-    serverHits++;
     try {
       const response = await axios.post(url, req.body, { timeout: 5000 })
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
