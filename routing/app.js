@@ -27,19 +27,23 @@ app.post('/', route)
 app.post('/server-discovery', addServer)
 
 async function route(req, res) {
-    
     if (res.tries === undefined) {
         res.tries = serverInfo.length - 1;
     }
     console.log('start route')
     // TODO: Insert logic of finding a working server.
-    const server = serverInfo[serverHits % serverInfo.length];
-    serverHits++;
-    if (res.tries > 0 && server.state !== CircuitBeaker.State.CLOSED) {
-        res.tries--;
-        route(req, res);
+    let server = serverInfo[serverHits % serverInfo.length];
+    while (server.state !== CircuitBeaker.State.CLOSED) {
+      res.tries--;
+      if (res.tries < 0) {
+        res.status(503).json({ error: 'All servers down' })
+        return;
+      }
+      serverHits++;
+      server = serverInfo[serverHits % serverInfo.length];
     }
 
+    serverHits++;
     const baseURL = server?.url;
     const endpoint = req.body.path || '';
     const url = `${baseURL}${endpoint}`
@@ -58,10 +62,10 @@ async function route(req, res) {
         if (server.strikes >= openThreshold) {
           CircuitBeaker.SetToOpen(server)
         }
-      }
-      if (res.tries >= 0) {
-        route(req, res);
-        return;
+        if (res.tries >= 0) {
+          route(req, res);
+          return;
+        }
       }
       const errorBody = { error: message }
       errorBody.server = isVerbose ? baseURL : undefined;
