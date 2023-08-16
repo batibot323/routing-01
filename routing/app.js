@@ -35,7 +35,8 @@ async function route(req, res) {
     // TODO: Insert logic of finding a working server.
     const server = serverInfo[serverHits % serverInfo.length];
     serverHits++;
-    if (server.state !== CircuitBeaker.State.CLOSED) {
+    if (res.tries > 0 && server.state !== CircuitBeaker.State.CLOSED) {
+        res.tries--;
         route(req, res);
     }
 
@@ -51,18 +52,20 @@ async function route(req, res) {
     } catch (error) {
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       const { code, message } = handleError(error)
-      if (code >= 500 && res.tries > 0) {
+      if (code >= 500) {
         res.tries--;
         server.strikes++;
         if (server.strikes >= openThreshold) {
           CircuitBeaker.SetToOpen(server)
         }
-        route(req, res);
-      } else {      
-        const errorBody = { error: message }
-        errorBody.server = isVerbose ? baseURL : undefined;
-        res.status(code).json(errorBody);
       }
+      if (res.tries >= 0) {
+        route(req, res);
+        return;
+      }
+      const errorBody = { error: message }
+      errorBody.server = isVerbose ? baseURL : undefined;
+      res.status(code).json(errorBody);
     }
 }
 
