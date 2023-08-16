@@ -14,7 +14,9 @@ let serverHits = 0;
 //     'http://localhost:3003/'
 // ];
 let serverInfo = [
-    // { url: 'http://localhost:3001/', state: CircuitBreakerState.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3001/', state: CircuitBreakerState.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3002/', state: CircuitBreakerState.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3003/', state: CircuitBreakerState.CLOSED, strikes: 0 },
 ]
 
 app.get('/liveness', (_, res) => {
@@ -37,7 +39,7 @@ async function route(req, res) {
   
     serverHits++;
     try {
-      const response = await axios.post(url, req.body)
+      const response = await axios.post(url, req.body, { timeout: 5000 })
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       response.data.server = isVerbose ? baseURL : undefined;
       res.status(200).json(response.data)

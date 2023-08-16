@@ -27,6 +27,8 @@ slowly? Set timeout and move on to the next instance.
 
 I think I'm just adding things that are related to load balancing and, especially, availability patterns. I've not actually spent time thinking about them, and I'm hoping to discuss the nuances of different approaches with you.
 
+I set timeout for 5 seconds, if all instances are slow then, that's 15 seconds. If we aim to increase
+
 ## On being blocked by an intentionally hanging process.
 Tested out if I'm going to be blocked by a pending request using this code but it doesn't block me so we're good! This is just to determine whether I have to do things just so I can test my timeouts. Basically, express is non-blocking and can handle multiple requests. This also means that I have to set something in my *Simple API* just so I can tell them to act slow in all requests.
 ```javascript
