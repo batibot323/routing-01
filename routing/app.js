@@ -18,7 +18,7 @@ let serverInfo = [
     { url: 'http://localhost:3003/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
 ]
 const breaker = new CircuitBeaker.CircuitBeaker(serverInfo, {
-  removeThreshold: 1,
+  removeThreshold: 3,
   openStateRestTime: 20000,
   halfOpenStateInterval: 3000,
   timeout: timeout
@@ -38,20 +38,12 @@ async function route(req, res) {
         res.tries = 0
     }
     console.log('start route')
-    let server = serverInfo[serverHits % serverInfo.length];
-    if (server === undefined) {
-      res.status(503).json({ error: 'All servers down' })
-      return;
-    }
-    while (server.state !== CircuitBeaker.STATE.CLOSED) {
-      console.log(`${server.url} is ${server.state}`)
-      res.tries++;
-      if (res.tries >= serverInfo.length) {
-        res.status(503).json({ error: 'All servers down' })
-        return;
-      }
-      serverHits++;
-      server = serverInfo[serverHits % serverInfo.length];
+    let server;
+    try {
+      server = getWorkingServer();
+    } catch(err) {
+      res.status(503).json(err)
+      return
     }
 
     serverHits++;
@@ -68,16 +60,18 @@ async function route(req, res) {
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       const { code, message } = handleError(error)
       if (code >= 500) {
-        res.tries++;
         server.strikes++;
         if (server.strikes >= openThreshold) {
           breaker.setToOpen(server)
         }
+
+        res.tries++;
         if (res.tries < serverInfo.length) {
           route(req, res);
           return;
         }
       }
+
       const errorBody = { error: message }
       errorBody.server = isVerbose ? baseURL : undefined;
       res.status(code).json(errorBody);
@@ -99,6 +93,23 @@ async function addServer(req, res) {
     console.log(serverInfo);
 
     res.status(200).json({ success: true })
+}
+
+function getWorkingServer() {
+  let server = serverInfo[serverHits % serverInfo.length];
+  if (server === undefined) {
+    throw new Error('All servers down');
+  }
+  while (server.state !== CircuitBeaker.STATE.CLOSED) {
+    console.log(`${server.url} is ${server.state}`)
+    res.tries++;
+    if (res.tries >= serverInfo.length) {
+      throw new Error('All servers down');
+    }
+    serverHits++;
+    server = serverInfo[serverHits % serverInfo.length];
+  }
+  return server
 }
 
 // For non-server errors, we just reflect what the original error was from the Simple API.

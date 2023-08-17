@@ -43,8 +43,8 @@ class CircuitBeaker {
             .catch((err) => {
                 console.log(err);
                 console.log(`${server.url}: is dead`)
-                console.log(`${server.url} is ${server.state} and has ${server.strikes} strikes`)
                 server.strikes++;
+                console.log(`${server.url} is ${server.state} and has ${server.strikes} strikes`)
                 if (server.strikes >= this.removeThreshold) {
                     try {
                         console.log(`removing ${server.url}`)
