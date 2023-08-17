@@ -27,14 +27,17 @@ app.post('/', route)
 app.post('/server-discovery', addServer)
 
 async function route(req, res) {
+  // Problem with setting tries to length is that servers could've been added or removed.
+  // Better to start with 0 and do the check based on serverInfo.length.
     if (res.tries === undefined) {
-        res.tries = serverInfo.length - 1;
+        res.tries = 0
     }
     console.log('start route')
     let server = serverInfo[serverHits % serverInfo.length];
     while (server.state !== CircuitBeaker.State.CLOSED) {
-      res.tries--;
-      if (res.tries < 0) {
+      console.log(`${server.url} is ${server.state}`)
+      res.tries++;
+      if (res.tries >= serverInfo.length) {
         res.status(503).json({ error: 'All servers down' })
         return;
       }
@@ -56,12 +59,12 @@ async function route(req, res) {
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       const { code, message } = handleError(error)
       if (code >= 500) {
-        res.tries--;
+        res.tries++;
         server.strikes++;
         if (server.strikes >= openThreshold) {
           CircuitBeaker.SetToOpen(server)
         }
-        if (res.tries >= 0) {
+        if (res.tries < serverInfo.length) {
           route(req, res);
           return;
         }
@@ -77,12 +80,13 @@ async function addServer(req, res) {
     if (!url) {
         res.status(400).json({ error: 'Missing url' })
     }
+    // To preserve order
+    serverHits = serverHits % serverInfo.length
+    
     url = url.endsWith('/') ? url : `${url}/`;
     serverInfo.push({ url, state: CircuitBreakerState.CLOSED, strikes: 0 })
     console.log(serverInfo);
 
-    // To preserve order
-    serverHits = serverHits % serverInfo.length
     res.status(200).json({ success: true })
 }
 
