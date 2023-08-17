@@ -4,6 +4,7 @@ const axios = require('axios');
 
 const port = process.env.PORT || 3000
 let isBusy = false;
+// Just affects `/` and `/liveness` route.
 
 app.use(express.json())
 
@@ -18,30 +19,45 @@ app.post('/', (req, res) => {
   }
 })
 
+// Return `404`
 app.post('/error', (_, res) => {
   console.log('visited error route')
   res.status(404).json({error: 'not found'});
 })
 
+// Return `500`
 app.post('/internal-server-error', (_, res) => {
   console.log('visited internal-server-error route')
   res.status(500).json({error: 'discard this error for me.'});
 })
 
+// Return 200 but only after 15 seconds
 app.post('/hang-15', (req, res) => {
   console.log('visited hang-forever route')
   setTimeout(() => {
-    // TODO: Remove "path" in response
+    req.body.path = undefined
     res.status(200).json(req.body)
   }, 15000);
 })
 
+// Return 200 but only after 3 seconds
+app.post('/hang-3', (req, res) => {
+  console.log('visited hang-forever route')
+  setTimeout(() => {
+    req.body.path = undefined
+    res.status(200).json(req.body)
+  }, 3000);
+})
+
+// Restarts the server, doesn't "kill" it but it's close enough.
 app.post('/restart', (_, res) => {
   console.log('visited restart route')
   init();
   res.status(200).json();
 })
 
+// This is to lock other paths compared to *hang* endpoints which still lets other requests in.
+// Used to simulate `/liveness` endpoint being stuck.
 app.post('/deadlock', (_, res) => {
   console.log('visited deadlock route')
   isBusy = true;
@@ -58,11 +74,13 @@ app.post('/service-unavailable', (_, res) => {
   res.status(503).json({error: 'discard this error for me.'});
 })
 
+// Simulates a server that is stuck but doesn't block other requests from coming in.
 app.post('/hang-forever', (_, res) => {
   console.log('visited hang-forever route')
   res.status(200)
 })
 
+// Low-resource endpoint to check if server's still alive but not necessarily functioning properly.
 app.get('/liveness', (_, res) => {
   if (!isBusy) {
     res.status(200).json({alive: true})

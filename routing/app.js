@@ -33,8 +33,6 @@ app.get('/servers', (_, res) => {
 })
 
 async function route(req, res) {
-  // Problem with setting tries to length is that servers could've been added or removed.
-  // Better to start with 0 and do the check based on serverInfo.length.
     if (res.tries === undefined) {
         res.tries = 0
     }
