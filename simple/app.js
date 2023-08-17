@@ -61,6 +61,6 @@ app.listen(port, () => {
 
 function init() {
   const myUrl = 'http://localhost:' + port;
-  const routingUrl = 'http://localhost:3000/server-discovery';
+  const routingUrl = 'http://localhost:3000/servers';
   axios.post(routingUrl, {url: myUrl});
 }

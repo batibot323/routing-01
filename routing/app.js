@@ -6,21 +6,21 @@ const CircuitBeaker = require('./circuit-breaker')
 app.use(express.json())
 
 const isVerbose = true;
+const openThreshold = 1;
+const timeout = 3000;
+
 // We'll assume that this server doesn't stay down so we can just save to local memory.
 let serverHits = 0;
-// let serverURLs = [
-//     'http://localhost:3001/',
-//     'http://localhost:3002/',
-//     'http://localhost:3003/'
-// ];
 let serverInfo = [
     { url: 'http://localhost:3001/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
     { url: 'http://localhost:3002/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
     { url: 'http://localhost:3003/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
 ]
-const breaker = new CircuitBeaker.New(serverInfo);
-const openThreshold = 1;
-const removeThreshold = 3;
+const breaker = new CircuitBeaker.CircuitBeaker(serverInfo, {
+  removeThreshold: 3,
+  openStateRestTime: 20000,
+  halfOpenStateInterval: 3000
+});
 
 app.get('/liveness', (_, res) => {
     res.status(200).json({alive: true})
@@ -56,7 +56,7 @@ async function route(req, res) {
     const url = `${baseURL}${endpoint}`
   
     try {
-      const response = await axios.post(url, req.body, { timeout: 5000 })
+      const response = await axios.post(url, req.body, { timeout })
       console.log(`From ${baseURL} and endpoint ${endpoint}`)
       response.data.server = isVerbose ? baseURL : undefined;
       res.status(200).json(response.data)
