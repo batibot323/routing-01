@@ -14,17 +14,22 @@ let serverHits = 0;
 //     'http://localhost:3003/'
 // ];
 let serverInfo = [
-    { url: 'http://localhost:3001/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
-    { url: 'http://localhost:3002/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
-    { url: 'http://localhost:3003/', state: CircuitBeaker.State.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3001/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3002/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3003/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
 ]
+const breaker = new CircuitBeaker.New(serverInfo);
 const openThreshold = 1;
+const removeThreshold = 3;
 
 app.get('/liveness', (_, res) => {
     res.status(200).json({alive: true})
   })
 app.post('/', route)
-app.post('/server-discovery', addServer)
+app.post('/servers', addServer)
+app.get('/servers', (_, res) => {
+    res.status(200).json(serverInfo)
+})
 
 async function route(req, res) {
   // Problem with setting tries to length is that servers could've been added or removed.
@@ -34,7 +39,7 @@ async function route(req, res) {
     }
     console.log('start route')
     let server = serverInfo[serverHits % serverInfo.length];
-    while (server.state !== CircuitBeaker.State.CLOSED) {
+    while (server.state !== CircuitBeaker.STATE.CLOSED) {
       console.log(`${server.url} is ${server.state}`)
       res.tries++;
       if (res.tries >= serverInfo.length) {
@@ -62,7 +67,7 @@ async function route(req, res) {
         res.tries++;
         server.strikes++;
         if (server.strikes >= openThreshold) {
-          CircuitBeaker.SetToOpen(server)
+          breaker.setToOpen(server)
         }
         if (res.tries < serverInfo.length) {
           route(req, res);
@@ -82,9 +87,9 @@ async function addServer(req, res) {
     }
     // To preserve order
     serverHits = serverHits % serverInfo.length
-    
+
     url = url.endsWith('/') ? url : `${url}/`;
-    serverInfo.push({ url, state: CircuitBreakerState.CLOSED, strikes: 0 })
+    serverInfo.push({ url, state: CircuitBeaker.STATE.CLOSED, strikes: 0 })
     console.log(serverInfo);
 
     res.status(200).json({ success: true })
