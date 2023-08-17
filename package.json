@@ -3,6 +3,10 @@
     "start:simple-1": "PORT=3001 node simple/app.js",
     "start:simple-2": "PORT=3002 node simple/app.js",
     "start:simple-3": "PORT=3003 node simple/app.js",
+    "start:simple-4": "PORT=3004 node simple/app.js",
+    "start:simple-5": "PORT=3005 node simple/app.js",
+    "start:simple-6": "PORT=3006 node simple/app.js",
+    "start:simple-7": "PORT=3007 node simple/app.js",
     "start:routing": "node routing/app.js"
   },
   "dependencies": {

@@ -11,10 +11,11 @@ const timeout = 3000;
 
 // We'll assume that this server doesn't stay down so we can just save to local memory.
 let serverHits = 0;
+// let serverInfo = []
 let serverInfo = [
-    // { url: 'http://localhost:3001/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
-    // { url: 'http://localhost:3002/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
-    // { url: 'http://localhost:3003/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3001/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3002/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
+    { url: 'http://localhost:3003/', state: CircuitBeaker.STATE.CLOSED, strikes: 0 },
 ]
 const breaker = new CircuitBeaker.CircuitBeaker(serverInfo, {
   removeThreshold: 1,
@@ -93,6 +94,7 @@ async function addServer(req, res) {
     serverHits = NaN ? 0 : serverHits;
 
     url = url.endsWith('/') ? url : `${url}/`;
+    // Handle duplicate, treat url as unique identifier.
     serverInfo.push({ url, state: CircuitBeaker.STATE.CLOSED, strikes: 0 })
     console.log(serverInfo);
 

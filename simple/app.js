@@ -19,10 +19,10 @@ app.post('/', (req, res) => {
   }
 })
 
-// Return `404`
+// Return `400`
 app.post('/error', (_, res) => {
   console.log('visited error route')
-  res.status(404).json({error: 'not found'});
+  res.status(400).json({error: 'bad request'});
 })
 
 // Return `500`
@@ -49,19 +49,19 @@ app.post('/hang-3', (req, res) => {
   }, 3000);
 })
 
-// Restarts the server, doesn't "kill" it but it's close enough.
-app.post('/restart', (_, res) => {
-  console.log('visited restart route')
-  init();
-  res.status(200).json();
-})
-
 // This is to lock other paths compared to *hang* endpoints which still lets other requests in.
 // Used to simulate `/liveness` endpoint being stuck.
 app.post('/deadlock', (_, res) => {
   console.log('visited deadlock route')
   isBusy = true;
   res.status(200)
+})
+
+// Restarts the server, doesn't "kill" it but it's close enough.
+app.post('/restart', (_, res) => {
+  console.log('visited restart route')
+  init();
+  res.status(200).json();
 })
 
 app.post('/weird', (req, res) => {
@@ -80,7 +80,7 @@ app.post('/hang-forever', (_, res) => {
   res.status(200)
 })
 
-app.post('/flip', (_, res) => {
+app.post('/flip', (req, res) => {
   let random = Math.random()
   console.log(`visited flip route: ${random}`)
   // Randomize whether to return 200 or 500, 50%

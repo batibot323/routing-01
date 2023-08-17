@@ -8,6 +8,16 @@
 6. Make a request to Routing API, (http://localhost:3000/) with any request
     - You can specify behavior of request by adding "path" field, you can look at `simple/app.js` for the allowed paths.
 
+## Sample JSON
+- Happy Path
+```json
+{
+    "game": "Mobile Legends",
+    "gamerID": "GYUTDTE",
+    "points": 20
+}
+```
+- Request Error
 ```json
 {
     "game": "Mobile Legends",
@@ -16,6 +26,16 @@
     "path": "error"
 }
 ```
+
+### Paths
+You can also change the field `"path"` to specific values to get specific behaviors from Simple API. This just appends the value of `path` to the URL of the instance API we're calling. So, the descriptions below target the Simple API's behavior.
+- `"hang-15"` - waits for 15 seconds before responding back. Can still accept other requests. Also has `"hang-3"` and `"hang-forever"`
+- `"error"` - this returns a `400` bad request, a way to test if our Routing API can tell between if it's a request error, meaning it's the user's fault, or it's a server error, our fault. There's another endpoint `"weird"`, just there to test out non-5XX errors
+- `"internal-server-error"` - returns a `500` server error, our Routing API should signal to our user that it's our fault. Another similar endpoint is `"service-unavailable"`
+- `"flip"` - 50-50 chance to return either `200` or `500`
+- `"deadlock"` - forces the instance to be in a *permanently* stuck state, prevents from accepting other requests
+    - In reality, just affects the `/` and `/liveness` path of Simple API
+---
 # Requirements
 ## Required
 1. Simple post API - Done!
