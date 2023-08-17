@@ -9,6 +9,7 @@ const STATE = {
 const defaultRemoveThreshold = 3;
 const defaultOpenStateRestTime = 60000;
 const defaultHalfOpenStateInterval = 60000;
+const defaultTimeout = 10000;
 
 class CircuitBeaker {
     constructor(serverInfo, config) {
@@ -16,6 +17,7 @@ class CircuitBeaker {
         this.removeThreshold = config.removeThreshold || defaultRemoveThreshold;
         this.openStateRestTime = config.openStateRestTime || defaultOpenStateRestTime;
         this.halfOpenStateInterval = config.halfOpenStateInterval || defaultHalfOpenStateInterval;
+        this.timeout = config.timeout || defaultTimeout;
       }
     
     setToOpen(server) {
@@ -32,7 +34,8 @@ class CircuitBeaker {
     #handleHalfOpen(server) {
         server.state = STATE.HALF_OPEN;
         console.log(`${server.url}: testing liveness`)
-        axios.get(`${server.url}liveness`)
+        // TODO: Figure out how to handle this error, says uncaught AxiosError.
+        axios.get(`${server.url}liveness`, { timeout: 3000 })
             .then(() => {
                 console.log(`${server.url}: is alive`)
                 server.state = STATE.CLOSED;
@@ -43,14 +46,23 @@ class CircuitBeaker {
                 console.log(`${server.url}: is dead`)
                 server.strikes++;
                 if (server.strikes >= this.removeThreshold) {
-                    let indexOf = this.serverInfo.indexOf(server);
-                    this.serverInfo.splice(indexOf, 1);
+                    this.#removeServer(server);
                 } else {
                     setTimeout(() => {
                         this.#handleHalfOpen(server);
                     }, this.halfOpenStateInterval);
                 }
             })
+    }
+
+    #removeServer(server) {
+        let indexOf = this.serverInfo.indexOf(server);
+        this.serverInfo.splice(indexOf, 1);
+        try {
+            axios.post(`${server.url}/restart`)
+        } catch (err) {
+            console.log(`Failed to restart ${server.url}`)
+        }
     }
 }
 

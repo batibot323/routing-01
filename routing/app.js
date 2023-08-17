@@ -19,7 +19,8 @@ let serverInfo = [
 const breaker = new CircuitBeaker.CircuitBeaker(serverInfo, {
   removeThreshold: 3,
   openStateRestTime: 20000,
-  halfOpenStateInterval: 3000
+  halfOpenStateInterval: 3000,
+  timeout: timeout
 });
 
 app.get('/liveness', (_, res) => {
