@@ -80,6 +80,18 @@ app.post('/hang-forever', (_, res) => {
   res.status(200)
 })
 
+app.post('/flip', (_, res) => {
+  let random = Math.random()
+  console.log(`visited flip route: ${random}`)
+  // Randomize whether to return 200 or 500, 50%
+  if (random < 0.5) {
+    req.body.path = undefined
+    res.status(200).json(req.body)
+  } else {
+    res.status(500).json({error: 'discard this error for me.'});
+  }
+})
+
 // Low-resource endpoint to check if server's still alive but not necessarily functioning properly.
 app.get('/liveness', (_, res) => {
   if (!isBusy) {
