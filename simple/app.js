@@ -38,7 +38,8 @@ app.post('/hang-15', (req, res) => {
 
 app.post('/restart', (_, res) => {
   console.log('visited restart route')
-  res.status(200).json({error: 'discard this error for me.'});
+  init();
+  res.status(200).json();
 })
 
 app.post('/deadlock', (_, res) => {
@@ -66,7 +67,7 @@ app.get('/liveness', (_, res) => {
   if (!isBusy) {
     res.status(200).json({alive: true})
   } else {
-    res.status(200)
+    res.status(503).json({alive: false})
   }
 })
 

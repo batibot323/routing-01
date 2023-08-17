@@ -34,8 +34,7 @@ class CircuitBeaker {
     #handleHalfOpen(server) {
         server.state = STATE.HALF_OPEN;
         console.log(`${server.url}: testing liveness`)
-        // TODO: Figure out how to handle this error, says uncaught AxiosError.
-        axios.get(`${server.url}liveness`, { timeout: 3000 })
+        axios.get(`${server.url}liveness`, { timeout: this.timeout })
             .then(() => {
                 console.log(`${server.url}: is alive`)
                 server.state = STATE.CLOSED;
@@ -44,9 +43,15 @@ class CircuitBeaker {
             .catch((err) => {
                 console.log(err);
                 console.log(`${server.url}: is dead`)
+                console.log(`${server.url} is ${server.state} and has ${server.strikes} strikes`)
                 server.strikes++;
                 if (server.strikes >= this.removeThreshold) {
-                    this.#removeServer(server);
+                    try {
+                        console.log(`removing ${server.url}`)
+                        this.#removeServer(server);
+                    } catch (err) {
+                        console.log(err);
+                    }
                 } else {
                     setTimeout(() => {
                         this.#handleHalfOpen(server);
@@ -58,11 +63,10 @@ class CircuitBeaker {
     #removeServer(server) {
         let indexOf = this.serverInfo.indexOf(server);
         this.serverInfo.splice(indexOf, 1);
-        try {
-            axios.post(`${server.url}/restart`)
-        } catch (err) {
-            console.log(`Failed to restart ${server.url}`)
-        }
+        axios.post(`${server.url}restart`)
+        .catch((error) => {
+            console.log(`Error: ${error.message}`);
+        });
     }
 }
 
